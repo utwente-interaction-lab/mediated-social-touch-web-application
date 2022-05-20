@@ -1,6 +1,6 @@
 var MultiTouch = function(options) {
 
-  const socket = io("http://168.119.29.140:3000");
+  const socket = io("http://62.68.75.165:3000");
 
   var defaults = {
     id: 'touchpoints',
@@ -32,16 +32,16 @@ var MultiTouch = function(options) {
         "touchpoints": {"id": id, "x": x, "y": y},
         "intensity": parseInt($("#calc-intensity").val(), 10)
       })*/
-      $.each(touchpoints, function (i, touch) {
+      /*$.each(touchpoints, function (i, touch) {
         console.log(touch);
-      });
+      });*/
 
-      socket.emit("touchpoints", {
+      /*socket.emit("touchpoints", {
         "width": $(el).width(),
         "height": $(el).height(),
         "touchpoints": {"id": id, "x": x, "y": y},
         "intensity": parseInt($("#calc-intensity").val(), 10)
-      });
+      });*/
       touchpoints[id].css({
         'transform': 'translate('+x+'px, '+y+'px)'
       });
@@ -83,11 +83,26 @@ var MultiTouch = function(options) {
       event.preventDefault();
       
       var touches = (event.originalEvent && event.originalEvent.touches) ? event.originalEvent.touches : [event];
-      
+      var touch_array = [];
+
+      console.log("-----");
       $.each(touches, function (i, touch) {
         var id = touch.identifier != null ? touch.identifier : 'mouse';
-        moveTouch(id, touch.pageX, touch.pageY);         
-      });        
+        moveTouch(id, touch.pageX, touch.pageY);
+        //console.log("ID ", id, " x ", touch.pageX, " y ", touch.pageY);
+        touch_array.push({
+          'id': id,
+          "x": touch.pageX,
+          "y": touch.pageY
+        })
+      });
+      socket.emit("touchpoints", {
+        "width": $(el).width(),
+        "height": $(el).height(),
+        "touchpoints": touch_array,
+        "intensity": parseInt($("#calc-intensity").val(), 10)
+      });
+      console.log("-----");
     },
     
     release: function (event) {
@@ -128,7 +143,8 @@ $("input").on("input change", function (event) {
 
   switch (parameterName) {
     case "intensity":
-      $("#calc-intensity_value").html("Intensity: " + $(this).val() + '&ensp;'.repeat(3 - $(this).val().toString().length));
+      newVal = parseInt($(this).val()*100/127, 10);
+      $("#calc-intensity_value").html("Intensity: " + newVal + '% ' + '&ensp;'.repeat(3 - newVal.toString().length));
       break;
   }
 
