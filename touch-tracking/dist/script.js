@@ -20,28 +20,24 @@ var MultiTouch = function(options) {
     halfWidth = $(el).width()/2; 
     halfHeight = $(el).height()/2;
   }
+
+  function sendUpdate(){
+    socket.emit("touchpoints", {
+      "width": $(el).width(),
+      "height": $(el).height(),
+      "touchpoints": touch_array,
+      "intensity": parseInt($("#calc-intensity").val(), 10)
+    });
+    //console.log(touch_array);
+  }
   
   $(document).resize(resetCanvas);
   resetCanvas();
 
+  var touch_array = [];
+
   moveTouch = function(id, x, y) {
     if (touchpoints[id]) {
-      /*console.log("touchpoints", {
-        "width": $(el).width(),
-        "height": $(el).height(),
-        "touchpoints": {"id": id, "x": x, "y": y},
-        "intensity": parseInt($("#calc-intensity").val(), 10)
-      })*/
-      /*$.each(touchpoints, function (i, touch) {
-        console.log(touch);
-      });*/
-
-      /*socket.emit("touchpoints", {
-        "width": $(el).width(),
-        "height": $(el).height(),
-        "touchpoints": {"id": id, "x": x, "y": y},
-        "intensity": parseInt($("#calc-intensity").val(), 10)
-      });*/
       touchpoints[id].css({
         'transform': 'translate('+x+'px, '+y+'px)'
       });
@@ -51,6 +47,12 @@ var MultiTouch = function(options) {
   removeTouch = function(id) {
     touchpoints[id].remove();
     delete touchpoints[id];
+
+    // remove from array for socketio connection
+    index = touch_array.map(function(item) {
+      return item.id
+    }).indexOf(id);
+    touch_array.splice(index, 1);
   }
   
   var self = {
@@ -65,7 +67,8 @@ var MultiTouch = function(options) {
       
       // place touches by index
       var touches = (event.originalEvent && event.originalEvent.touches) ? event.originalEvent.touches : [event];
-      
+      touch_array = [];
+
       $.each(touches, function (i, touch) {
         var id = touch.identifier != null ? touch.identifier : 'mouse';
         var tmpl = $(options.touchTemplate);        
@@ -74,8 +77,15 @@ var MultiTouch = function(options) {
         if(!touchpoints[id]) {
           touchpoints[id] = tmpl.appendTo(el);
         }
+
+        touch_array.push({
+          'id': id,
+          "x": touch.pageX,
+          "y": touch.pageY
+        });
         
         moveTouch(id, touch.pageX, touch.pageY);
+        sendUpdate();
       });
     },
     
@@ -83,26 +93,23 @@ var MultiTouch = function(options) {
       event.preventDefault();
       
       var touches = (event.originalEvent && event.originalEvent.touches) ? event.originalEvent.touches : [event];
-      var touch_array = [];
+      touch_array = [];
 
-      console.log("-----");
       $.each(touches, function (i, touch) {
         var id = touch.identifier != null ? touch.identifier : 'mouse';
         moveTouch(id, touch.pageX, touch.pageY);
-        //console.log("ID ", id, " x ", touch.pageX, " y ", touch.pageY);
+
         touch_array.push({
           'id': id,
           "x": touch.pageX,
           "y": touch.pageY
-        })
+        });
       });
-      socket.emit("touchpoints", {
-        "width": $(el).width(),
-        "height": $(el).height(),
-        "touchpoints": touch_array,
-        "intensity": parseInt($("#calc-intensity").val(), 10)
-      });
-      console.log("-----");
+
+      sendUpdate();
+
+      //console.log(touch_array);
+      //console.log(touchpoints);
     },
     
     release: function (event) {
@@ -115,6 +122,7 @@ var MultiTouch = function(options) {
         
         removeTouch(id);
       });
+      sendUpdate();
     }
   };
   return self.init();
