@@ -1,6 +1,6 @@
 var MultiTouch = function(options) {
 
-  const socket = io("http://62.68.75.165:3000");
+  const socket = io();
 
   var defaults = {
     id: 'touchpoints',

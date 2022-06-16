@@ -1,18 +1,20 @@
 const express = require('express')
-const app = express()
-
-const
-    {Server} = require("socket.io")
-server = new Server(3000, {
+const app = express();
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server, {
     cors: {
         origin: "*"
     }
 });
 
+app.use(express.static('content'))
+
 // let sequenceNumberByClient = new Map();
 let output = null;
 // event fired every time a new client connects:
-server.on("connection", (socket) => {
+io.on("connection", (socket) => {
     console.info(`Client connected [id=${socket.id}]`);
     // initialize this client's sequence number
     //sequenceNumberByClient.set(socket, 1);
@@ -34,3 +36,6 @@ server.on("connection", (socket) => {
     });
 });
 
+server.listen(3000, () => {
+    console.log('listening on *:3000');
+});
