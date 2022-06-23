@@ -1,4 +1,19 @@
+function throttle (callback, limit) {
+  var wait = false;                  // Initially, we're not waiting
+  return function (e) {               // We return a throttled function
+      if (!wait) {                   // If we're not waiting
+          callback(e);           // Execute users function
+          wait = true;               // Prevent future invocations
+          setTimeout(function () {   // After a period of time
+              wait = false;          // And allow future invocations
+          }, limit);
+      }
+  }
+}
+
 var MultiTouch = function(options) {
+
+
 
   const socket = io();
 
@@ -55,6 +70,7 @@ var MultiTouch = function(options) {
     touch_array.splice(index, 1);
   }
   
+  
   var self = {
     init: function () {
       $(el)
@@ -89,7 +105,7 @@ var MultiTouch = function(options) {
       });
     },
     
-    onTouchMove: function(event) {
+    onTouchMove: throttle(function(event) {
       event.preventDefault();
       
       var touches = (event.originalEvent && event.originalEvent.touches) ? event.originalEvent.touches : [event];
@@ -110,7 +126,7 @@ var MultiTouch = function(options) {
 
       //console.log(touch_array);
       //console.log(touchpoints);
-    },
+    }, 20),
     
     release: function (event) {
       event.preventDefault();

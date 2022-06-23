@@ -10,7 +10,10 @@ html, body {
   height: 100%;
   max-width: 100%;
   z-index: 1;
-
+  background-image: url(./arm.svg);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
 }
 
 #start-overlay h1 {
