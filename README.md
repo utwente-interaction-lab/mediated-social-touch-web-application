@@ -1,4 +1,4 @@
-# Touch Tracking
+# Mediated Social Touch Web Application
 
 This docker container hosts the NodeJS web application of the Mediated Social Touch project. It serves an HTML & Javascript interface that can register multitouch gestures (only on mobile devices), which are forwarded to the [Client Application](https://github.com/utwente-interaction-lab/mediated-social-touch-client)
 
